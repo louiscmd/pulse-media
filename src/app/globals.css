@@ -1,0 +1,85 @@
+@import "tailwindcss";
+
+:root {
+  --color-bg: #08080a;
+  --color-panel: #0f0f13;
+  --color-panel-2: #131318;
+  --color-purple: #9b5cff;
+  --color-purple-soft: rgba(155, 92, 255, 0.35);
+  --color-purple-glow: rgba(155, 92, 255, 0.18);
+  --color-text: #f2f1f6;
+  --color-text-dim: #9a97a6;
+  --color-text-faint: #615e6d;
+  --color-green: #5ce6a8;
+  --color-amber: #ffc36b;
+  --color-red: #ff7b7b;
+  --color-border: #201c2a;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background: #08080a;
+  background-image: radial-gradient(circle at 20% -10%, #17111f 0%, #08080a 45%);
+  background-attachment: fixed;
+  color: #f2f1f6;
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+  font-size: 13.5px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #201c2a;
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #2d2840;
+}
+
+/* Pulse ring animation for live indicator */
+@keyframes pulse-ring {
+  0% { transform: scale(1); opacity: 0.8; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
+/* Fade + slide up for step transitions */
+@keyframes fade-up {
+  0% { opacity: 0; transform: translateY(8px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-up {
+  animation: fade-up 0.35s ease-out forwards;
+}
+
+.animate-pulse-ring {
+  animation: pulse-ring 2s ease-out infinite;
+}
+
+/* Number tween — override with JS for specific elements */
+.tween-number {
+  transition: none; /* tweened via JS, not CSS */
+}
+
+/* Chart tooltip */
+.recharts-tooltip-wrapper {
+  outline: none;
+}
