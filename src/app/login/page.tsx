@@ -18,10 +18,16 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [magicSent, setMagicSent] = useState(false)
   const [signupDone, setSignupDone] = useState(false)
+  // Tracks whether the error is specifically an unconfirmed-email case
+  const [needsConfirmation, setNeedsConfirmation] = useState(false)
+  const [resendLoading, setResendLoading] = useState(false)
+  const [resendSent, setResendSent] = useState(false)
 
   function switchMode(next: Mode) {
     setMode(next)
     setError(null)
+    setNeedsConfirmation(false)
+    setResendSent(false)
     setPassword('')
     setConfirmPassword('')
   }
@@ -30,18 +36,39 @@ export default function LoginPage() {
     e.preventDefault()
     setLoading(true)
     setError(null)
+    setNeedsConfirmation(false)
 
     const supabase = createClient()
     const { error } = await supabase.auth.signInWithPassword({ email, password })
 
     if (error) {
-      setError(error.message)
+      // Supabase returns "Email not confirmed" when the account exists but
+      // the confirmation link hasn't been clicked yet.
+      const isUnconfirmed =
+        error.message.toLowerCase().includes('email not confirmed') ||
+        // @ts-ignore — newer Supabase SDK exposes error.code
+        error.code === 'email_not_confirmed'
+
+      if (isUnconfirmed) {
+        setNeedsConfirmation(true)
+        setError(null)
+      } else {
+        setError(error.message)
+      }
       setLoading(false)
       return
     }
 
     router.push('/')
     router.refresh()
+  }
+
+  async function handleResendConfirmation() {
+    setResendLoading(true)
+    const supabase = createClient()
+    await supabase.auth.resend({ type: 'signup', email })
+    setResendLoading(false)
+    setResendSent(true)
   }
 
   async function handleMagicLink(e: React.FormEvent) {
@@ -124,8 +151,59 @@ export default function LoginPage() {
         {/* Card */}
         <div className="bg-panel border border-border-default rounded-[24px] p-8">
 
-          {/* ── Magic link sent ── */}
-          {magicSent ? (
+          {/* ── Email not confirmed ── */}
+          {needsConfirmation ? (
+            <div className="space-y-5">
+              <div className="flex flex-col items-center text-center py-2">
+                <div className="w-12 h-12 rounded-full bg-amber/10 border border-amber/30 flex items-center justify-center mx-auto mb-4">
+                  <span className="text-amber text-xl">✉</span>
+                </div>
+                <h2 className="text-[17px] font-semibold text-text mb-2">Confirm your email first</h2>
+                <p className="text-text-dim text-[13.5px] leading-relaxed">
+                  Your account for <strong className="text-text">{email}</strong> was created but
+                  the confirmation link hasn't been clicked yet. Check your inbox (and spam folder).
+                </p>
+              </div>
+
+              {resendSent ? (
+                <div className="flex items-center gap-2 justify-center text-green text-[13.5px]">
+                  <span>✓</span>
+                  <span>New confirmation email sent — check your inbox.</span>
+                </div>
+              ) : (
+                <Button
+                  className="w-full"
+                  onClick={handleResendConfirmation}
+                  loading={resendLoading}
+                >
+                  Resend confirmation email
+                </Button>
+              )}
+
+              <div className="text-center space-y-2 pt-1">
+                <p className="text-text-faint text-[12.5px]">
+                  Already confirmed?{' '}
+                  <button
+                    onClick={() => { setNeedsConfirmation(false) }}
+                    className="text-purple hover:underline"
+                  >
+                    Try signing in again
+                  </button>
+                </p>
+                <p className="text-text-faint text-[12.5px]">
+                  Wrong email?{' '}
+                  <button
+                    onClick={() => { setNeedsConfirmation(false); setEmail('') }}
+                    className="text-purple hover:underline"
+                  >
+                    Use a different address
+                  </button>
+                </p>
+              </div>
+            </div>
+
+          /* ── Magic link sent ── */
+          ) : magicSent ? (
             <div className="text-center py-4">
               <div className="w-12 h-12 rounded-full bg-green/10 flex items-center justify-center mx-auto mb-4">
                 <span className="text-green text-xl">✓</span>
@@ -148,10 +226,13 @@ export default function LoginPage() {
               <div className="w-12 h-12 rounded-full bg-green/10 flex items-center justify-center mx-auto mb-4">
                 <span className="text-green text-xl">✓</span>
               </div>
-              <h2 className="text-[17px] font-semibold text-text mb-2">Confirm your email</h2>
-              <p className="text-text-dim text-[13.5px]">
-                We sent a confirmation link to <strong className="text-text">{email}</strong>.
-                Open it to activate your account.
+              <h2 className="text-[17px] font-semibold text-text mb-2">One step left — confirm your email</h2>
+              <p className="text-text-dim text-[13.5px] leading-relaxed">
+                We sent a confirmation link to <strong className="text-text">{email}</strong>.{' '}
+                Click it to activate your account, then come back here to sign in.
+              </p>
+              <p className="text-text-faint text-[12.5px] mt-3">
+                Don't see it? Check your spam folder.
               </p>
               <button
                 onClick={() => { setSignupDone(false); switchMode('login') }}
