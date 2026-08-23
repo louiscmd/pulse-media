@@ -14,7 +14,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     .eq('user_id', user.id)
     .single()
 
-  if (client && !client.onboarding_completed_at) {
+  if (!client || !client.onboarding_completed_at) {
     redirect('/onboarding')
   }
 
