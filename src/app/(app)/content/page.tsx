@@ -3,8 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import IdeaCard from '@/components/content/IdeaCard'
-import StatusBadge from '@/components/ui/StatusBadge'
-import type { ContentIdea, FootageAsset } from '@/types/database'
+import type { ContentIdea, FootageAsset, IdeaComment } from '@/types/database'
 import { relativeTime } from '@/lib/utils'
 import { cn } from '@/lib/utils'
 
@@ -20,6 +19,7 @@ const STATUS_FILTERS = [
 
 export default function ContentPage() {
   const [ideas, setIdeas] = useState<ContentIdea[]>([])
+  const [commentsByIdea, setCommentsByIdea] = useState<Record<string, IdeaComment[]>>({})
   const [filter, setFilter] = useState('all')
   const [loading, setLoading] = useState(true)
   const [clientId, setClientId] = useState<string | null>(null)
@@ -47,11 +47,12 @@ export default function ContentPage() {
       .eq('client_id', client.id)
       .order('target_post_date', { ascending: true })
 
-    setIdeas(data ?? [])
+    const fetchedIdeas = data ?? []
+    setIdeas(fetchedIdeas)
     setLoading(false)
 
     // Find the first idea that needs footage
-    const needsFootage = (data ?? []).find((i) => i.status === 'footage_needed')
+    const needsFootage = fetchedIdeas.find((i) => i.status === 'footage_needed')
     setFootageIdea(needsFootage ?? null)
 
     if (needsFootage) {
@@ -64,10 +65,25 @@ export default function ContentPage() {
     }
   }, [])
 
+  const fetchComments = useCallback(async (ideaIds: string[]) => {
+    if (ideaIds.length === 0) return
+    const { data } = await supabase
+      .from('idea_comments')
+      .select('*')
+      .in('idea_id', ideaIds)
+      .order('created_at')
+
+    const grouped: Record<string, IdeaComment[]> = {}
+    for (const c of data ?? []) {
+      if (!grouped[c.idea_id]) grouped[c.idea_id] = []
+      grouped[c.idea_id].push(c as IdeaComment)
+    }
+    setCommentsByIdea(grouped)
+  }, [])
+
   useEffect(() => {
     fetchIdeas()
 
-    // Realtime subscription for idea status changes
     const sub = supabase
       .channel('content_ideas')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'content_ideas' }, fetchIdeas)
@@ -75,6 +91,13 @@ export default function ContentPage() {
 
     return () => { supabase.removeChannel(sub) }
   }, [fetchIdeas])
+
+  // Fetch comments once ideas are loaded
+  useEffect(() => {
+    if (ideas.length > 0) {
+      fetchComments(ideas.map((i) => i.id))
+    }
+  }, [ideas, fetchComments])
 
   async function handleApprove(id: string) {
     await supabase
@@ -84,12 +107,30 @@ export default function ContentPage() {
     await fetchIdeas()
   }
 
-  async function handleRequestChanges(id: string) {
+  async function handleRequestChanges(id: string, note: string) {
+    const idea = ideas.find((i) => i.id === id)
     await supabase
       .from('content_ideas')
-      .update({ status: 'draft', revision_count: ideas.find((i) => i.id === id)!.revision_count + 1 })
+      .update({
+        status: 'draft',
+        revision_count: (idea?.revision_count ?? 0) + 1,
+      })
       .eq('id', id)
+
+    // If the client left a note, save it as an idea comment
+    if (note) {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (user) {
+        await supabase.from('idea_comments').insert({
+          idea_id: id,
+          author_id: user.id,
+          body: `↩ Changes requested — ${note}`,
+        })
+      }
+    }
+
     await fetchIdeas()
+    await fetchComments(ideas.map((i) => i.id))
   }
 
   const filtered = filter === 'all' ? ideas : ideas.filter((i) => i.status === filter)
@@ -149,8 +190,10 @@ export default function ContentPage() {
             <IdeaCard
               key={idea.id}
               idea={idea}
+              comments={commentsByIdea[idea.id] ?? []}
               onApprove={handleApprove}
               onRequestChanges={handleRequestChanges}
+              onCommentAdded={() => fetchComments(ideas.map((i) => i.id))}
             />
           ))}
         </div>
@@ -206,7 +249,6 @@ function DriveUploadPanel({
       <button
         className="w-full sm:w-auto px-5 py-2.5 rounded-pill text-[13.5px] font-semibold border border-purple-soft text-purple bg-purple/10 hover:bg-purple/15 transition-all duration-150 mb-5"
         onClick={() => {
-          // Google Picker API would open here
           alert('Google Picker API integration — configure GOOGLE_PICKER_API_KEY in env vars.')
         }}
       >

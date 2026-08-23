@@ -130,6 +130,15 @@ export interface SocialMetricsDaily {
   followers: number
 }
 
+export interface IdeaComment {
+  id: string
+  idea_id: string
+  author_id: string
+  body: string
+  created_at: string
+  edited_at: string | null
+}
+
 export interface Report {
   id: string
   client_id: string

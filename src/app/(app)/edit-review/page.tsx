@@ -8,16 +8,21 @@ import { cn } from '@/lib/utils'
 import Button from '@/components/ui/Button'
 import StatusBadge from '@/components/ui/StatusBadge'
 
+type EditWithIdea = Edit & { content_idea: ContentIdea }
+
 export default function EditReviewPage() {
-  const [edits, setEdits] = useState<(Edit & { content_idea: ContentIdea })[]>([])
-  const [selectedEdit, setSelectedEdit] = useState<(Edit & { content_idea: ContentIdea }) | null>(null)
+  const [edits, setEdits] = useState<EditWithIdea[]>([])
+  const [selectedEdit, setSelectedEdit] = useState<EditWithIdea | null>(null)
   const [comments, setComments] = useState<EditComment[]>([])
   const [userId, setUserId] = useState<string | null>(null)
   const [newComment, setNewComment] = useState('')
   const [timestampSeconds, setTimestampSeconds] = useState(0)
   const [loading, setLoading] = useState(true)
   const [actionLoading, setActionLoading] = useState<'approve' | 'changes' | null>(null)
+  const [approvalNote, setApprovalNote] = useState('')
+  const [showChangesInput, setShowChangesInput] = useState(false)
   const videoRef = useRef<HTMLVideoElement>(null)
+  const commentsBottomRef = useRef<HTMLDivElement>(null)
 
   const supabase = createClient()
 
@@ -34,14 +39,29 @@ export default function EditReviewPage() {
         .single()
       if (!client) return
 
+      // First fetch all idea IDs for this client, then filter edits by those
+      const { data: ideaIds } = await supabase
+        .from('content_ideas')
+        .select('id')
+        .eq('client_id', client.id)
+
+      if (!ideaIds || ideaIds.length === 0) {
+        setLoading(false)
+        return
+      }
+
       const { data } = await supabase
         .from('edits')
         .select('*, content_idea:content_idea_id(*)')
-        .eq('content_ideas.client_id', client.id)
+        .in('content_idea_id', ideaIds.map((r) => r.id))
         .order('created_at', { ascending: false })
 
-      setEdits(data ?? [])
-      if (data?.[0]) setSelectedEdit(data[0])
+      const typed = (data ?? []) as unknown as EditWithIdea[]
+      setEdits(typed)
+
+      // Select the first pending review, or the most recent if all done
+      const pending = typed.find((e) => e.status === 'in_review')
+      setSelectedEdit(pending ?? typed[0] ?? null)
       setLoading(false)
     }
     init()
@@ -49,8 +69,14 @@ export default function EditReviewPage() {
 
   useEffect(() => {
     if (!selectedEdit) return
+    setShowChangesInput(false)
+    setApprovalNote('')
     fetchComments()
   }, [selectedEdit?.id])
+
+  useEffect(() => {
+    commentsBottomRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [comments])
 
   async function fetchComments() {
     if (!selectedEdit) return
@@ -94,10 +120,21 @@ export default function EditReviewPage() {
       .update({ status: 'ready_to_post' })
       .eq('id', selectedEdit.content_idea.id)
 
+    // If there's an approval note, add it as a comment at 0:00
+    if (approvalNote.trim() && userId) {
+      await supabase.from('edit_comments').insert({
+        edit_id: selectedEdit.id,
+        author_id: userId,
+        timestamp_seconds: 0,
+        body: `✓ Approved — ${approvalNote.trim()}`,
+      })
+    }
+
     setActionLoading(null)
-    // Refresh
     setEdits((prev) => prev.map((e) => e.id === selectedEdit.id ? { ...e, status: 'approved' } : e))
     setSelectedEdit((e) => e ? { ...e, status: 'approved' } : e)
+    setApprovalNote('')
+    await fetchComments()
   }
 
   async function handleRequestChanges() {
@@ -108,9 +145,22 @@ export default function EditReviewPage() {
       .update({ status: 'changes_requested' })
       .eq('id', selectedEdit.id)
 
+    // Save the feedback note as a comment
+    if (approvalNote.trim() && userId) {
+      await supabase.from('edit_comments').insert({
+        edit_id: selectedEdit.id,
+        author_id: userId,
+        timestamp_seconds: 0,
+        body: `↩ Changes requested — ${approvalNote.trim()}`,
+      })
+    }
+
     setActionLoading(null)
+    setShowChangesInput(false)
+    setApprovalNote('')
     setEdits((prev) => prev.map((e) => e.id === selectedEdit.id ? { ...e, status: 'changes_requested' } : e))
     setSelectedEdit((e) => e ? { ...e, status: 'changes_requested' } : e)
+    await fetchComments()
   }
 
   function formatTime(seconds: number) {
@@ -161,6 +211,9 @@ export default function EditReviewPage() {
                   )}
                 >
                   {edit.content_idea?.title ?? 'Edit'} — v{edit.version}
+                  {edit.status === 'in_review' && (
+                    <span className="ml-2 w-1.5 h-1.5 rounded-full bg-amber inline-block" />
+                  )}
                 </button>
               ))}
             </div>
@@ -204,28 +257,50 @@ export default function EditReviewPage() {
 
                 {/* Actions */}
                 {selectedEdit.status === 'in_review' && (
-                  <div className="flex gap-3">
-                    <Button
-                      variant="primary"
-                      onClick={handleApprove}
-                      loading={actionLoading === 'approve'}
-                    >
-                      ✓ Approve this edit
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={handleRequestChanges}
-                      loading={actionLoading === 'changes'}
-                    >
-                      Request changes
-                    </Button>
+                  <div className="bg-panel border border-border-default rounded-card p-5 space-y-4">
+                    <p className="text-[13.5px] font-semibold text-text">
+                      Ready to make a decision?
+                    </p>
+
+                    {/* Optional note */}
+                    <textarea
+                      value={approvalNote}
+                      onChange={(e) => setApprovalNote(e.target.value)}
+                      placeholder="Add a note (optional) — e.g. "Love the colour grade" or "Please shorten the intro by 3 seconds""
+                      rows={2}
+                      className="w-full bg-panel-2 border border-border-default rounded-xl px-4 py-2.5 text-[13px] text-text placeholder:text-text-faint focus:outline-none focus:border-purple-soft transition-colors resize-none"
+                    />
+
+                    <div className="flex gap-3">
+                      <Button
+                        variant="primary"
+                        onClick={handleApprove}
+                        loading={actionLoading === 'approve'}
+                      >
+                        ✓ Approve this edit
+                      </Button>
+                      <Button
+                        variant="outline"
+                        onClick={handleRequestChanges}
+                        loading={actionLoading === 'changes'}
+                      >
+                        Request changes
+                      </Button>
+                    </div>
                   </div>
                 )}
 
                 {selectedEdit.status === 'approved' && (
-                  <div className="flex items-center gap-2 text-green text-[13.5px]">
+                  <div className="flex items-center gap-2 px-4 py-3 bg-green/5 border border-green/20 rounded-xl text-green text-[13.5px]">
                     <span>✓</span>
                     <span>Approved — this cut is going live</span>
+                  </div>
+                )}
+
+                {selectedEdit.status === 'changes_requested' && (
+                  <div className="flex items-center gap-2 px-4 py-3 bg-amber/5 border border-amber/20 rounded-xl text-amber text-[13.5px]">
+                    <span>↩</span>
+                    <span>Changes requested — your Pulse Media editor will revise and re-upload</span>
                   </div>
                 )}
               </>
@@ -233,11 +308,14 @@ export default function EditReviewPage() {
           </div>
 
           {/* Right: timestamped comments */}
-          <div className="bg-panel border border-border-default rounded-card flex flex-col overflow-hidden" style={{ height: 'fit-content', maxHeight: '70vh' }}>
+          <div
+            className="bg-panel border border-border-default rounded-card flex flex-col overflow-hidden"
+            style={{ height: 'fit-content', maxHeight: '70vh' }}
+          >
             <div className="px-4 py-3.5 border-b border-border-default">
               <p className="text-[15px] font-semibold text-text">Comments</p>
               <p className="text-text-faint text-[12px] mt-0.5">
-                Current timestamp: {formatTime(timestampSeconds)}
+                Pause at any moment and add a timestamped note
               </p>
             </div>
 
@@ -245,7 +323,7 @@ export default function EditReviewPage() {
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
               {comments.length === 0 ? (
                 <p className="text-text-faint text-[13px] text-center py-6">
-                  No comments yet. Pause the video at a moment and add feedback below.
+                  No comments yet. Pause the video and add feedback below.
                 </p>
               ) : (
                 comments.map((comment) => (
@@ -262,31 +340,37 @@ export default function EditReviewPage() {
                     >
                       {formatTime(comment.timestamp_seconds)}
                     </button>
-                    <div>
-                      <p className="text-text text-[13px] leading-relaxed">{comment.body}</p>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-text text-[13px] leading-relaxed break-words">{comment.body}</p>
                       <p className="text-text-faint text-[11px] mt-0.5">{relativeTime(comment.created_at)}</p>
                     </div>
                   </div>
                 ))
               )}
+              <div ref={commentsBottomRef} />
             </div>
 
             {/* Add comment */}
-            <form onSubmit={addComment} className="p-3 border-t border-border-default flex gap-2">
-              <input
-                value={newComment}
-                onChange={(e) => setNewComment(e.target.value)}
-                placeholder={`Comment at ${formatTime(timestampSeconds)}…`}
-                className="flex-1 bg-panel-2 border border-border-default rounded-xl px-3 py-2 text-[13px] text-text placeholder:text-text-faint focus:outline-none focus:border-purple-soft transition-colors"
-              />
-              <button
-                type="submit"
-                disabled={!newComment.trim()}
-                className="px-3 py-2 rounded-xl text-[13px] font-semibold text-white disabled:opacity-40"
-                style={{ background: 'linear-gradient(135deg, #b47cff, #7c3dff)' }}
-              >
-                ↑
-              </button>
+            <form onSubmit={addComment} className="p-3 border-t border-border-default">
+              <div className="text-[11.5px] text-text-faint mb-1.5 px-1">
+                At {formatTime(timestampSeconds)}
+              </div>
+              <div className="flex gap-2">
+                <input
+                  value={newComment}
+                  onChange={(e) => setNewComment(e.target.value)}
+                  placeholder="Add timestamped note…"
+                  className="flex-1 bg-panel-2 border border-border-default rounded-xl px-3 py-2 text-[13px] text-text placeholder:text-text-faint focus:outline-none focus:border-purple-soft transition-colors"
+                />
+                <button
+                  type="submit"
+                  disabled={!newComment.trim()}
+                  className="px-3 py-2 rounded-xl text-[13px] font-semibold text-white disabled:opacity-40"
+                  style={{ background: 'linear-gradient(135deg, #b47cff, #7c3dff)' }}
+                >
+                  ↑
+                </button>
+              </div>
             </form>
           </div>
         </div>

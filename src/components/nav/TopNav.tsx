@@ -4,20 +4,28 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 
-const NAV_LINKS = [
-  { href: '/', label: 'Home' },
-  { href: '/content', label: 'Content' },
-  { href: '/comms', label: 'Comms' },
-  { href: '/reports', label: 'Reports' },
-]
+interface NavLink {
+  href: string
+  label: string
+  badge?: number
+}
 
 interface TopNavProps {
   clientName?: string
   avatarUrl?: string | null
+  pendingEdits?: number
 }
 
-export default function TopNav({ clientName, avatarUrl }: TopNavProps) {
+export default function TopNav({ clientName, avatarUrl, pendingEdits = 0 }: TopNavProps) {
   const pathname = usePathname()
+
+  const NAV_LINKS: NavLink[] = [
+    { href: '/', label: 'Home' },
+    { href: '/content', label: 'Content' },
+    { href: '/edit-review', label: 'Edit Review', badge: pendingEdits },
+    { href: '/comms', label: 'Comms' },
+    { href: '/reports', label: 'Reports' },
+  ]
 
   return (
     <nav className="sticky top-0 z-50 flex items-center justify-between px-6 py-3 bg-panel/80 backdrop-blur-xl border-b border-border-default">
@@ -36,19 +44,27 @@ export default function TopNav({ clientName, avatarUrl }: TopNavProps) {
       </Link>
 
       {/* Nav links */}
-      <div className="flex items-center gap-6">
-        {NAV_LINKS.map(({ href, label }) => {
+      <div className="flex items-center gap-5">
+        {NAV_LINKS.map(({ href, label, badge }) => {
           const active = pathname === href || (href !== '/' && pathname.startsWith(href))
           return (
             <Link
               key={href}
               href={href}
               className={cn(
-                'text-[13.5px] font-medium transition-colors duration-150',
+                'relative flex items-center gap-1.5 text-[13.5px] font-medium transition-colors duration-150',
                 active ? 'text-text' : 'text-text-dim hover:text-text'
               )}
             >
               {label}
+              {badge != null && badge > 0 && (
+                <span
+                  className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[10.5px] font-bold text-white leading-none"
+                  style={{ background: 'linear-gradient(135deg, #b47cff, #7c3dff)' }}
+                >
+                  {badge > 9 ? '9+' : badge}
+                </span>
+              )}
             </Link>
           )
         })}

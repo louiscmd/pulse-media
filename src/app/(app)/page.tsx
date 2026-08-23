@@ -19,13 +19,14 @@ export default async function HomePage() {
     .eq('user_id', user.id)
     .single()
 
-  if (!client) redirect('/login')
+  if (!client) redirect('/onboarding')
 
   // Parallel data fetches
   const [
     { data: ideas },
     { data: adMetrics },
     { data: allIdeas },
+    { data: pendingEdits },
   ] = await Promise.all([
     // Next 3 ideas by target_post_date
     supabase
@@ -49,11 +50,23 @@ export default async function HomePage() {
       .from('content_ideas')
       .select('id, status')
       .eq('client_id', client.id),
+
+    // Edits pending client review
+    supabase
+      .from('edits')
+      .select('id')
+      .eq('status', 'in_review')
+      .in(
+        'content_idea_id',
+        (await supabase.from('content_ideas').select('id').eq('client_id', client.id))
+          .data?.map((r) => r.id) ?? []
+      ),
   ])
 
   const ideasToReview = allIdeas?.filter((i) => i.status === 'awaiting_review').length ?? 0
   const footageNeeded = allIdeas?.filter((i) => i.status === 'footage_needed').length ?? 0
   const editsReady = allIdeas?.filter((i) => i.status === 'ready_to_post').length ?? 0
+  const pendingEditCount = pendingEdits?.length ?? 0
 
   const totalSpend = adMetrics?.reduce((sum, m) => sum + (m.spend ?? 0), 0) ?? 0
   const avgRoas = adMetrics?.length
@@ -73,11 +86,36 @@ export default async function HomePage() {
         <p className="text-text-dim mt-1 text-[13.5px]">Here's where things stand this week.</p>
       </div>
 
+      {/* Pending edits callout */}
+      {pendingEditCount > 0 && (
+        <Link
+          href="/edit-review"
+          className="flex items-center justify-between px-5 py-4 rounded-card border border-amber/25 bg-amber/5 hover:bg-amber/8 hover:border-amber/40 transition-all duration-150 group"
+        >
+          <div className="flex items-center gap-3">
+            <span className="text-amber text-[18px]">▶</span>
+            <div>
+              <p className="text-[14px] font-semibold text-text">
+                {pendingEditCount === 1
+                  ? '1 edit is ready for your review'
+                  : `${pendingEditCount} edits are ready for your review`}
+              </p>
+              <p className="text-[12.5px] text-text-dim mt-0.5">
+                Watch and approve (or request changes) to keep production moving.
+              </p>
+            </div>
+          </div>
+          <span className="text-text-faint text-[13px] group-hover:text-text transition-colors">
+            Review →
+          </span>
+        </Link>
+      )}
+
       {/* Stat tiles */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatTile label="Ideas to review" value={ideasToReview} accent />
         <StatTile label="Footage needed" value={footageNeeded} />
-        <StatTile label="Edits ready" value={editsReady} />
+        <StatTile label="Edits to review" value={pendingEditCount} accent={pendingEditCount > 0} />
         <StatTile
           label="Ad spend MTD"
           value={`$${Math.round(totalSpend).toLocaleString()}`}
