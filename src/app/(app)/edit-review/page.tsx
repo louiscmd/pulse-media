@@ -266,7 +266,7 @@ export default function EditReviewPage() {
                     <textarea
                       value={approvalNote}
                       onChange={(e) => setApprovalNote(e.target.value)}
-                      placeholder="Add a note (optional) — e.g. "Love the colour grade" or "Please shorten the intro by 3 seconds""
+                      placeholder="Add a note (optional) — e.g. 'Love the colour grade' or 'Please shorten the intro by 3 seconds'"
                       rows={2}
                       className="w-full bg-panel-2 border border-border-default rounded-xl px-4 py-2.5 text-[13px] text-text placeholder:text-text-faint focus:outline-none focus:border-purple-soft transition-colors resize-none"
                     />
