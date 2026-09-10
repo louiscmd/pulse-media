@@ -137,7 +137,7 @@ export default async function HomePage() {
           <div className="bg-panel border border-border-default rounded-card p-8 text-center">
             <p className="text-text-dim text-[14px]">No content ideas yet.</p>
             <p className="text-text-faint text-[13px] mt-1">
-              Your Pulse Media team will publish your first batch within 48 hours of setup.
+              Your Socialy team will publish your first batch within 48 hours of setup.
             </p>
           </div>
         ) : (

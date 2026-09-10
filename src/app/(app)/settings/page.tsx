@@ -295,7 +295,7 @@ export default function SettingsPage() {
                   <div className="space-y-3">
                     {[
                       { label: 'Weekly report ready', sublabel: 'Email when your report is published' },
-                      { label: 'New ideas to review', sublabel: 'Email when Pulse Media adds content ideas' },
+                      { label: 'New ideas to review', sublabel: 'Email when Socialy adds content ideas' },
                       { label: 'Urgent items', sublabel: 'Email for time-sensitive feedback requests' },
                     ].map(({ label, sublabel }) => (
                       <label key={label} className="flex items-start gap-3 cursor-pointer group">

@@ -190,7 +190,7 @@ export default function EditReviewPage() {
         <div className="bg-panel border border-border-default rounded-card p-12 text-center">
           <p className="text-text-dim text-[14px]">No edits to review right now.</p>
           <p className="text-text-faint text-[13px] mt-1">
-            Your Pulse Media team will upload edited cuts here once footage is received.
+            Your Socialy team will upload edited cuts here once footage is received.
           </p>
         </div>
       ) : (
@@ -300,7 +300,7 @@ export default function EditReviewPage() {
                 {selectedEdit.status === 'changes_requested' && (
                   <div className="flex items-center gap-2 px-4 py-3 bg-amber/5 border border-amber/20 rounded-xl text-amber text-[13.5px]">
                     <span>↩</span>
-                    <span>Changes requested — your Pulse Media editor will revise and re-upload</span>
+                    <span>Changes requested — your Socialy editor will revise and re-upload</span>
                   </div>
                 )}
               </>
@@ -366,7 +366,7 @@ export default function EditReviewPage() {
                   type="submit"
                   disabled={!newComment.trim()}
                   className="px-3 py-2 rounded-xl text-[13px] font-semibold text-white disabled:opacity-40"
-                  style={{ background: 'linear-gradient(135deg, #b47cff, #7c3dff)' }}
+                  style={{ background: 'linear-gradient(135deg, #1DD9C5, #0CBCAA)' }}
                 >
                   ↑
                 </button>

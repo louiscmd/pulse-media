@@ -24,9 +24,9 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           size === 'lg' && 'px-7 py-3 text-[15px]',
           // Variants
           variant === 'primary' && [
-            'bg-gradient-to-br from-[#b47cff] to-[#7c3dff] text-white',
-            'shadow-[0_8px_24px_-8px_rgba(124,61,255,0.6)]',
-            'hover:shadow-[0_8px_32px_-6px_rgba(124,61,255,0.75)] hover:brightness-110',
+            'bg-gradient-to-br from-[#1DD9C5] to-[#0CBCAA] text-white',
+            'shadow-[0_8px_24px_-8px_rgba(13,188,170,0.6)]',
+            'hover:shadow-[0_8px_32px_-6px_rgba(13,188,170,0.75)] hover:brightness-110',
             'active:scale-[0.98]',
           ],
           variant === 'ghost' && [

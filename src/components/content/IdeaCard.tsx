@@ -108,9 +108,9 @@ export default function IdeaCard({
         'bg-panel rounded-card border transition-all duration-200 overflow-hidden',
         'border-[1.4px]',
         idea.status === 'awaiting_review'
-          ? 'border-purple-soft shadow-[0_8px_30px_-18px_rgba(155,92,255,0.18)]'
+          ? 'border-purple-soft shadow-[0_8px_30px_-18px_rgba(29,217,197,0.18)]'
           : 'border-border-default',
-        isActionable && 'hover:shadow-[0_12px_40px_-14px_rgba(155,92,255,0.28)] hover:border-purple/50'
+        isActionable && 'hover:shadow-[0_12px_40px_-14px_rgba(29,217,197,0.28)] hover:border-purple/50'
       )}
     >
       {/* ── Main card body ── */}
@@ -318,7 +318,7 @@ export default function IdeaCard({
                   type="submit"
                   disabled={!newComment.trim() || submittingComment}
                   className="px-3 py-2 rounded-xl text-[13px] font-semibold text-white disabled:opacity-40"
-                  style={{ background: 'linear-gradient(135deg, #b47cff, #7c3dff)' }}
+                  style={{ background: 'linear-gradient(135deg, #1DD9C5, #0CBCAA)' }}
                 >
                   ↑
                 </button>

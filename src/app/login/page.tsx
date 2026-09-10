@@ -135,16 +135,17 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         {/* Brand */}
         <div className="flex flex-col items-center mb-10">
-          <div
-            className="w-12 h-12 rounded-pill flex items-center justify-center text-white font-bold text-xl mb-4"
-            style={{
-              background: 'linear-gradient(135deg, #b47cff, #6f2dff)',
-              boxShadow: '0 0 40px rgba(155,92,255,0.25)',
-            }}
-          >
-            P
-          </div>
-          <h1 className="text-[26px] font-semibold text-text">Welcome to Pulse Media</h1>
+          <svg width="48" height="48" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" className="mb-4" style={{ filter: 'drop-shadow(0 0 16px rgba(29,217,197,0.35))' }}>
+            <defs>
+              <linearGradient id="tg" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="#1DD9C5"/>
+                <stop offset="100%" stopColor="#0CBCAA"/>
+              </linearGradient>
+            </defs>
+            <polygon fill="url(#tg)" points="10,8 90,8 90,22 52,58 34,58 10,22"/>
+            <polygon fill="url(#tg)" points="48,60 90,60 90,74 66,92 10,92 10,78"/>
+          </svg>
+          <h1 className="text-[26px] font-semibold text-text">Welcome to Socialy</h1>
           <p className="text-text-dim mt-1 text-[13.5px]">{subtitle}</p>
         </div>
 
@@ -353,7 +354,7 @@ export default function LoginPage() {
         <p className="text-center text-text-faint text-[12px] mt-6">
           {mode === 'signup'
             ? 'By creating an account you agree to our terms of service.'
-            : 'Access is by invitation only — contact your Pulse Media account manager to get started.'}
+            : 'Access is by invitation only — contact your Socialy account manager to get started.'}
         </p>
       </div>
     </div>

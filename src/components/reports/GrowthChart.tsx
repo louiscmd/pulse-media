@@ -63,8 +63,8 @@ export default function GrowthChart({ title, data, currentValue, delta }: Growth
             <AreaChart data={data} margin={{ top: 8, right: 4, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id={`fill-${title}`} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#9b5cff" stopOpacity={0.12} />
-                  <stop offset="95%" stopColor="#9b5cff" stopOpacity={0} />
+                  <stop offset="5%" stopColor="#1DD9C5" stopOpacity={0.12} />
+                  <stop offset="95%" stopColor="#1DD9C5" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid
@@ -88,12 +88,12 @@ export default function GrowthChart({ title, data, currentValue, delta }: Growth
               />
               <Tooltip
                 content={<CustomTooltip />}
-                cursor={{ stroke: 'rgba(155,92,255,0.3)', strokeWidth: 1, strokeDasharray: '4 2' }}
+                cursor={{ stroke: 'rgba(29,217,197,0.3)', strokeWidth: 1, strokeDasharray: '4 2' }}
               />
               <Area
                 type="monotone"
                 dataKey="value"
-                stroke="#9b5cff"
+                stroke="#1DD9C5"
                 strokeWidth={2}
                 strokeLinejoin="round"
                 strokeLinecap="round"
@@ -101,7 +101,7 @@ export default function GrowthChart({ title, data, currentValue, delta }: Growth
                 dot={false}
                 activeDot={{
                   r: 4,
-                  fill: '#9b5cff',
+                  fill: '#1DD9C5',
                   stroke: '#0f0f13',
                   strokeWidth: 3,
                 }}
@@ -112,13 +112,13 @@ export default function GrowthChart({ title, data, currentValue, delta }: Growth
                   x={last.date}
                   y={last.value}
                   r={5}
-                  fill="#9b5cff"
+                  fill="#1DD9C5"
                   stroke="#0f0f13"
                   strokeWidth={3}
                   label={{
                     value: formatNumber(last.value, true),
                     position: 'top',
-                    fill: '#9b5cff',
+                    fill: '#1DD9C5',
                     fontSize: 11,
                     fontWeight: 600,
                   }}

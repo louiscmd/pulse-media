@@ -31,16 +31,20 @@ export default function TopNav({ clientName, avatarUrl, pendingEdits = 0 }: TopN
     <nav className="sticky top-0 z-50 flex items-center justify-between px-6 py-3 bg-panel/80 backdrop-blur-xl border-b border-border-default">
       {/* Brand mark */}
       <Link href="/" className="flex items-center gap-2.5 shrink-0">
-        <div
-          className="w-8 h-8 rounded-pill flex items-center justify-center text-white font-bold text-sm"
-          style={{
-            background: 'linear-gradient(135deg, #b47cff, #6f2dff)',
-            boxShadow: '0 0 24px rgba(155,92,255,0.3)',
-          }}
-        >
-          P
-        </div>
-        <span className="font-semibold text-[15px] text-text tracking-tight">Pulse Media</span>
+        {/* S-bolt logo */}
+        <svg width="32" height="32" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style={{ filter: 'drop-shadow(0 0 10px rgba(29,217,197,0.4))' }}>
+          <defs>
+            <linearGradient id="teal-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#1DD9C5" />
+              <stop offset="100%" stopColor="#0CBCAA" />
+            </linearGradient>
+          </defs>
+          {/* Upper bar: full-width top, narrows toward bottom-center-left */}
+          <polygon fill="url(#teal-grad)" points="10,8 90,8 90,22 52,58 34,58 10,22" />
+          {/* Lower bar: starts right-center, widens to full-width bottom */}
+          <polygon fill="url(#teal-grad)" points="48,60 90,60 90,74 66,92 10,92 10,78" />
+        </svg>
+        <span className="font-semibold text-[15px] text-text tracking-tight">Socialy</span>
       </Link>
 
       {/* Nav links */}
@@ -60,7 +64,7 @@ export default function TopNav({ clientName, avatarUrl, pendingEdits = 0 }: TopN
               {badge != null && badge > 0 && (
                 <span
                   className="inline-flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full text-[10.5px] font-bold text-white leading-none"
-                  style={{ background: 'linear-gradient(135deg, #b47cff, #7c3dff)' }}
+                  style={{ background: 'linear-gradient(135deg, #1DD9C5, #0CBCAA)' }}
                 >
                   {badge > 9 ? '9+' : badge}
                 </span>

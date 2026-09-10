@@ -180,7 +180,7 @@ export default function ContentPage() {
           <p className="text-text-dim text-[14px] font-medium">No ideas in this category yet.</p>
           <p className="text-text-faint text-[13px] mt-1">
             {filter === 'all'
-              ? 'Your Pulse Media team will publish your first batch within 48 hours.'
+              ? 'Your Socialy team will publish your first batch within 48 hours.'
               : `Nothing is ${filter.replace(/_/g, ' ')} right now.`}
           </p>
         </div>

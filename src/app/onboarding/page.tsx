@@ -215,7 +215,7 @@ export default function OnboardingPage() {
             className="absolute inset-y-0 left-0 rounded-full transition-all duration-500"
             style={{
               width: `${progress}%`,
-              background: 'linear-gradient(90deg, #b47cff, #7c3dff)',
+              background: 'linear-gradient(90deg, #1DD9C5, #0CBCAA)',
             }}
           />
         </div>
@@ -288,9 +288,9 @@ function StepContent({ step, profile, upd, clientName }: StepContentProps) {
         <div>
           <div
             className="w-14 h-14 rounded-pill flex items-center justify-center mb-6"
-            style={{ background: 'linear-gradient(135deg, #b47cff, #6f2dff)', boxShadow: '0 0 40px rgba(155,92,255,0.25)' }}
+            style={{ background: 'linear-gradient(135deg, #1DD9C5, #0CBCAA)', boxShadow: '0 0 40px rgba(29,217,197,0.25)' }}
           >
-            <span className="text-white text-2xl font-bold">P</span>
+            <span className="text-white text-2xl font-bold">S</span>
           </div>
           <h1 className="text-[26px] font-semibold text-text mb-3">Let's set up your brand.</h1>
           <p className="text-text-dim text-[14px] leading-relaxed">
@@ -555,11 +555,11 @@ function StepContent({ step, profile, upd, clientName }: StepContentProps) {
           <div
             className="w-16 h-16 rounded-pill flex items-center justify-center mx-auto mb-6"
             style={{
-              background: 'linear-gradient(135deg, #b47cff, #6f2dff)',
-              boxShadow: '0 0 48px rgba(155,92,255,0.35)',
+              background: 'linear-gradient(135deg, #1DD9C5, #0CBCAA)',
+              boxShadow: '0 0 48px rgba(29,217,197,0.35)',
             }}
           >
-            <span className="text-white text-3xl font-bold">P</span>
+            <span className="text-white text-3xl font-bold">S</span>
           </div>
           <h1 className="text-[26px] font-semibold text-text mb-3">
             You're all set, {clientName}.
@@ -569,7 +569,7 @@ function StepContent({ step, profile, upd, clientName }: StepContentProps) {
           </p>
           <ol className="text-left space-y-4 mb-8">
             {[
-              "Your Pulse Media team reviews your brand profile and builds this month's content calendar — usually within 48 hours.",
+              "Your Socialy team reviews your brand profile and builds this month's content calendar — usually within 48 hours.",
               "You'll see your first batch of ideas and filming briefs appear in the Content tab, ready for your review and approval.",
               "Once you approve and film your first clips, upload them to your linked Drive folder — we'll handle everything from editing to posting.",
             ].map((item, i) => (

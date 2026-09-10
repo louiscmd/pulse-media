@@ -269,7 +269,7 @@ export default function CommsPage() {
                             : 'text-text bg-panel-2 border border-border-default rounded-bl-[4px]'
                         )}
                         style={isMine ? {
-                          background: 'linear-gradient(135deg, #b47cff, #7c3dff)',
+                          background: 'linear-gradient(135deg, #1DD9C5, #0CBCAA)',
                         } : undefined}
                       >
                         {msg.body}
@@ -345,7 +345,7 @@ export default function CommsPage() {
               type="submit"
               disabled={!newMessage.trim() || sending}
               className="px-5 py-2.5 rounded-pill text-[13.5px] font-semibold text-white disabled:opacity-40 transition-all"
-              style={{ background: 'linear-gradient(135deg, #b47cff, #7c3dff)' }}
+              style={{ background: 'linear-gradient(135deg, #1DD9C5, #0CBCAA)' }}
             >
               Send
             </button>
